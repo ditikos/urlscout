@@ -42,36 +42,12 @@ class UrlScout extends WP_CLI_Command {
                 $arr = $this->squash($what);
 
                 foreach ($arr as $key => $value):
-                    // Snippet from wordpress 3.1.1
-                    $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
-
-                    if (preg_match_all($filter, $key, $matches)):
-                        if (count($matches[0]) > 0):
-                            foreach ($matches[0] as $url):
-                                $this->thelist[] = $url;
-                            endforeach;
-                        endif;
-                    endif;
-
-                    if (preg_match_all($filter, $value, $matches)):
-                        if (count($matches[0]) > 0):
-                            foreach ($matches[0] as $url):
-                                $this->thelist[] = $url;
-                            endforeach;
-                        endif;
-                    endif;
-
+                    // wp_options might have a url as key
+                    $this->searchInArray($key);
+                    $this->searchInArray($value);
                 endforeach;
             else:
-                // Snippet from wordpress 3.1.1
-                $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
-                if (preg_match_all($filter, $what, $matches)):
-                    if (count($matches[0]) > 0):
-                        foreach ($matches[0] as $url):
-                            $this->thelist[] = $url;
-                        endforeach;
-                    endif;
-                endif;
+                $this->searchInArray($what);
             endif;
         endforeach;
     }
@@ -89,16 +65,7 @@ class UrlScout extends WP_CLI_Command {
         $entries = $wpdb->get_results($url_search);
         foreach ($entries as $entry):
             $what = $entry->post_content;
-
-            // Snippet from wordpress 3.1.1
-            $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
-            if (preg_match_all($filter, $what, $matches)):
-                if (count($matches[0]) > 0):
-                    foreach ($matches[0] as $url):
-                        $this->thelist[] = $url;
-                    endforeach;
-                endif;
-            endif;
+            $this->searchInArray($what);
         endforeach;
 
         //
@@ -156,6 +123,21 @@ class UrlScout extends WP_CLI_Command {
         endforeach;
 
         return $flat;
+    }
+
+    /**
+     * Search for specific pattern
+     */
+    private function searchInArray($what) {
+        // Snippet from wordpress 3.1.1
+        $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
+        if (preg_match_all($filter, $what, $matches)):
+            if (count($matches[0]) > 0):
+                foreach ($matches[0] as $url):
+                    $this->thelist[] = $url;
+                endforeach;
+            endif;
+        endif;
     }
 
 }
