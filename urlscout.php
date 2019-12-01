@@ -21,7 +21,6 @@ class UrlScout extends WP_CLI_Command {
     {
         $this->searchInWordpress();
         $this->displayResults();
-        
     }
 
     private function searchInWPOptions() {
@@ -129,8 +128,7 @@ class UrlScout extends WP_CLI_Command {
      * Search for specific pattern
      */
     private function searchInArray($what) {
-        // Snippet from wordpress 3.1.1
-        $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
+        $filter = "/(?i)\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))/";
         if (preg_match_all($filter, $what, $matches)):
             if (count($matches[0]) > 0):
                 foreach ($matches[0] as $url):
