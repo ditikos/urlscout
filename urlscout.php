@@ -8,6 +8,8 @@ Author URL: https://ditikos.github.io
 
 use WP_CLI\Utils;
 
+use function WP_CLI\Utils\make_progress_bar;
+
 class UrlScout extends WP_CLI_Command {
     protected $thelist;
 
@@ -19,7 +21,40 @@ class UrlScout extends WP_CLI_Command {
      */
     public function __invoke( $args )
     {
-        $this->searchInWordpress();
+        global $wpdb;
+        $this->thelist = array();
+        //$this->searchInWordpress();
+        //$this->displayResults();
+        $searchTableSQL = 'SELECT table_schema db, table_name tb from information_schema.tables where table_schema="'.DB_NAME.'"';
+        // " and lower(table_name) like "wp_woo%"'; 
+        $results = $wpdb->get_results($searchTableSQL);
+        $progress = make_progress_bar("Hello progress:", count($results));
+        foreach ($results as $table):
+            $progress->tick();
+            $tableToSearch = $table->tb;
+            WP_CLI::line("Searching in :".$tableToSearch);
+            $sqlToSearch = "select * from ".$tableToSearch;
+            $resultSearch = $wpdb->get_results($sqlToSearch);
+            foreach ($resultSearch as $entry):
+                foreach ($entry as $key=>$value):
+                    $this->searchInArray($key);
+                    $value = maybe_unserialize( $value );
+                    if (is_array($value) || is_object($value)):
+                        $arr = $this->squash($value);
+                        foreach ($arr as $key => $value):
+                            // wp_options might have a url as key
+                            $this->searchInArray($key);
+                            $this->searchInArray($value);
+                        endforeach;
+                    else:
+                        $this->searchInArray($key);
+                    endif;
+                endforeach;
+            endforeach;
+        endforeach;
+
+        $progress->finish();
+        $this->searchInAttachments();
         $this->displayResults();
     }
 
@@ -67,6 +102,13 @@ class UrlScout extends WP_CLI_Command {
             $this->searchInArray($what);
         endforeach;
 
+        $this->searchInAttachments();
+        $this->searchInWPOptions();
+    }
+
+    private function searchInAttachments() {
+        global $wpdb;
+
         //
         // Extract attachments using wp_postmeta
         //
@@ -82,9 +124,6 @@ class UrlScout extends WP_CLI_Command {
                 $this->thelist[] = $upload_info['baseurl']."/".$entry->meta_value;
             endforeach;
         endif;
-
-
-        $this->searchInWPOptions();
     }
 
     public function displayResults()
