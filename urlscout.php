@@ -8,14 +8,8 @@ Author URL: https://ditikos.github.io
 
 use WP_CLI\Utils;
 
-class UrlScout {
+class UrlScout extends WP_CLI_Command {
     protected $thelist;
-
-    public function __invoke( $args )
-    {
-        $this->searchInWordpress();
-        $this->displayResults();
-    }
 
     /**
      * Searches for urls in wordpress wp_posts and wp_postmeta
@@ -23,6 +17,12 @@ class UrlScout {
      * @since 1.0.0
      * @author Panagiotis Chalatsakos <chibioni@gmail.com>
      */
+    public function __invoke( $args )
+    {
+        $this->searchInWordpress();
+        $this->displayResults();
+    }
+
     private function searchInWordpress() {
         global $wpdb;
 
