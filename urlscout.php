@@ -134,6 +134,11 @@ class UrlScout extends WP_CLI_Command {
         WP_CLI::success("Found: ".count($this->thelist));
     }
 
+    /**
+     * Flatten object / array
+     * @author Wogan May
+     * @gist http://gist.github.com/woganmay/9a98dda0524bca664c
+     */
     private function squash($array, $prefix = '') {
 
         $flat = array();
