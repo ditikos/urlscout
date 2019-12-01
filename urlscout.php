@@ -21,6 +21,59 @@ class UrlScout extends WP_CLI_Command {
     {
         $this->searchInWordpress();
         $this->displayResults();
+        
+    }
+
+    private function searchInWPOptions() {
+
+        global $wpdb;
+
+        // Extract urls from wp_options
+        //
+        $url_search = "SELECT option_value FROM wp_options";
+        $entries = $wpdb->get_results($url_search);
+        foreach ($entries as $entry):
+
+            // Use wp's maybe_unserialize
+            $what = maybe_unserialize($entry->option_value);
+            if (is_array($what) || is_object($what)):
+
+                // Flatten array
+                $arr = $this->squash($what);
+
+                foreach ($arr as $key => $value):
+                    // Snippet from wordpress 3.1.1
+                    $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
+
+                    if (preg_match_all($filter, $key, $matches)):
+                        if (count($matches[0]) > 0):
+                            foreach ($matches[0] as $url):
+                                $this->thelist[] = $url;
+                            endforeach;
+                        endif;
+                    endif;
+
+                    if (preg_match_all($filter, $value, $matches)):
+                        if (count($matches[0]) > 0):
+                            foreach ($matches[0] as $url):
+                                $this->thelist[] = $url;
+                            endforeach;
+                        endif;
+                    endif;
+
+                endforeach;
+            else:
+                // Snippet from wordpress 3.1.1
+                $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
+                if (preg_match_all($filter, $what, $matches)):
+                    if (count($matches[0]) > 0):
+                        foreach ($matches[0] as $url):
+                            $this->thelist[] = $url;
+                        endforeach;
+                    endif;
+                endif;
+            endif;
+        endforeach;
     }
 
     private function searchInWordpress() {
@@ -39,13 +92,13 @@ class UrlScout extends WP_CLI_Command {
 
             // Snippet from wordpress 3.1.1
             $filter = '#\b(https?|ftp)://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))#';
-            if (preg_match_all($filter, $what, $matches)) {
+            if (preg_match_all($filter, $what, $matches)):
                 if (count($matches[0]) > 0):
                     foreach ($matches[0] as $url):
                         $this->thelist[] = $url;
                     endforeach;
                 endif;
-            }
+            endif;
         endforeach;
 
         //
@@ -63,6 +116,9 @@ class UrlScout extends WP_CLI_Command {
                 $this->thelist[] = $upload_info['baseurl']."/".$entry->meta_value;
             endforeach;
         endif;
+
+
+        $this->searchInWPOptions();
     }
 
     public function displayResults()
@@ -74,7 +130,29 @@ class UrlScout extends WP_CLI_Command {
         else:
             WP_CLI::warning("No urls found.");
         endif;
+
+        WP_CLI::success("Found: ".count($this->thelist));
     }
+
+    private function squash($array, $prefix = '') {
+
+        $flat = array();
+        $sep = ".";
+
+        if (!is_array($array))  $array = (array)$array;
+
+        foreach ($array as $key => $value):
+            $_key = ltrim($prefix.$sep.$key, ".");
+            if (is_array($value) || is_object($value)):
+                $flat = array_merge($flat, $this->squash($value, $_key));
+            else:
+                $flat[$_key] = $value;
+            endif;
+        endforeach;
+
+        return $flat;
+    }
+
 }
 WP_CLI::add_command( 'urlscout', 'UrlScout' );
 
