@@ -1,0 +1,23 @@
+{
+    "name": "ditikos/urlscout",
+    "description": "Scout for specific urls in wordpress installation",
+    "type": "wp-cli-package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Panagiotis Chalatsakos",
+            "email": "chibioni@gmail.com"
+        }
+    ],
+    "require": {
+        "wp-cli/wp-cli": "^2"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        },
+        "files": [
+            "urlscout.php"
+        ]
+    }
+}
