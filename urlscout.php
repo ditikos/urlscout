@@ -2,7 +2,7 @@
 /*
 Description: Searches urls inside Wordpress Tables
 Version: 1.0.0
-Author: Panagiotis Chalatsakos <chibioni@gmail.com>
+Author: Panagiotis Chalatsakos
 Author URL: https://ditikos.github.io
 */
 
@@ -15,7 +15,7 @@ class UrlScout extends WP_CLI_Command {
      * Searches for urls in wordpress wp_posts and wp_postmeta
      * 
      * @since 1.0.0
-     * @author Panagiotis Chalatsakos <chibioni@gmail.com>
+     * @author Panagiotis Chalatsakos
      */
     public function __invoke( $args )
     {
