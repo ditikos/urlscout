@@ -1,4 +1,10 @@
 <?php
+/*
+Description: Searches urls inside Wordpress Tables
+Version: 1.0.0
+Author: Panagiotis Chalatsakos <chibioni@gmail.com>
+Author URL: https://ditikos.github.io
+*/
 
 use WP_CLI\Utils;
 
@@ -11,6 +17,12 @@ class UrlScout {
         $this->displayResults();
     }
 
+    /**
+     * Searches for urls in wordpress wp_posts and wp_postmeta
+     * 
+     * @since 1.0.0
+     * @author Panagiotis Chalatsakos <chibioni@gmail.com>
+     */
     private function searchInWordpress() {
         global $wpdb;
 
